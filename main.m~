@@ -1,0 +1,71 @@
+%Constants
+COMP_EFFICIENCY = .81;
+TURB_EFFICIENCY = .87;
+Cp = .24;
+Cpw = 1;
+K = 1.4;
+
+%Known Values
+t1 = 540;
+tl1 = 500;
+tl2 = 620;
+th1 = 3060;
+p1 = 14.7;
+p5 = 14.7;
+
+%User Input
+
+% Dialog box for regen in use
+choice = questdlg('Is a regenerator being used?', 'No','Yes');
+% Handle response
+switch choice
+    case 'Yes'
+        regen = true;
+        regen_efficiency = input('Enter regen efficiency as a decimal: ');
+    case 'No'
+        regen = false;
+        regen_efficiency = 0;
+end
+r_p = input('Enter compressor pressure ratio: ');
+t4 = input('Enter turbin inlet temp in rankine: ');
+
+%Set Delta P through the regenerator
+if(regen)
+    delta_p = findDeltaP(regen_efficiency);
+else
+    delta_p = 0;
+end
+
+%Calculations through the compressor
+p2 = p1*r_p;
+t2s = (r_p^((K-1)/K))*t1;
+w_comp = (Cp*(t2s-t1))/ COMP_EFFICIENCY;
+t2 = ((t2s-t1)/COMP_EFFICIENCY) + t1;
+
+%Pressure after regen
+p3 = p2 - delta_p;
+p4 = p3;
+
+%Calculations through the turbine
+t5s = t4/((p4/p5)^((K-1)/K));
+w_turb = TURB_EFFICIENCY*Cp*(t4 - t5s);
+t5 = t4 - TURB_EFFICIENCY*(t4 - t5s);
+
+%Net work output of turbine
+w_net = w_turb - w_comp;
+disp(w_net);
+
+%Finding temp after regenerator 
+t3 = regen_efficiency*(t5 - t2)+t2;
+
+%Calculating thermal efficiency of cycle
+ql = Cpw*(tl1-tl2);
+th2 = t3 + 180;
+qh = Cp*(th1 - th2);
+cycle_efficiency = 1 - (ql/qh);
+disp(qh);
+disp(ql);
+
+function [delta_p] = findDeltaP(regen_efficiency)
+    delta_p = (.5*regen_efficiency)/(1-regen_efficiency);
+end
