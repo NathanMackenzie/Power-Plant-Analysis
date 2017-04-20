@@ -14,8 +14,9 @@ end
 r_p = input('Enter compressor pressure ratio: ');
 t4 = input('Enter turbin inlet temp in rankine: ');
 
-[w_net, cycle_efficiency] = cycle(r_p,t4,regen,regen_efficiency);
+[w_net, cycle_efficiency, irrev] = cycle(r_p,t4,regen,regen_efficiency);
 
 disp(w_net);
 disp(cycle_efficiency);
+disp(irrev);
 
