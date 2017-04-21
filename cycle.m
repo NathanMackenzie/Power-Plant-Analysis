@@ -20,7 +20,7 @@ Cp = .24; % Constant specific heat of air
 Cpw = 1; % Constant specific heat of water
 K = 1.4; % Thermodynamic K value for air
 R = 53.34; % Ideal gas constant for air
-T0 = 540; % Reference temperature
+T0 = 537; % Reference temperature
 
 % Known Values
 t1 = 540; % Temp of compressor inlet
@@ -28,7 +28,6 @@ tl1 = 500; % Temp of low hex inlet
 tl2 = 620; % Temp of low hex outlet
 th1 = 3060; % Temp of high hex inlet
 p1 = 14.7; % Pressure of compressor inlet
-p5 = 14.7; % Pressure of turbine outlet
 
 % Find if regenerator is in use
 if regen_efficiency == 0
@@ -43,6 +42,9 @@ if(regen)
 else
     delta_p = 0;
 end
+
+% Pressure of turbine outlet
+p5 = 14.7 + delta_p; 
 
 % Calculations through the compressor
 p2 = p1*r_p;
@@ -83,12 +85,13 @@ m_h = (t4-t3)/(th1-th2); % Relates mass flow rate through hex to mass flow rate 
 m_l = (Cp*(t6-t1))/(Cpw*(tl2-tl1)); % Relates mass flow rate through  low hex to mass flow rate of cycle air
 
 compressor_i = T0*(Cp*(log(t2/t1))-((R/778)*(log(p2/p1)))); 
-turbine_i = T0*(Cp*(log(t5/t4))-((R/778)*(log(p5/p4))));
-regen_i = T0*(Cp*(log(t3/t2)+log(t5/t6))-((R/788)*(log(p3/p2)+log(p5/p6))));
-hhex_i = T0*((Cp*log(t4/t3))+m_h*(Cp*log(th2/th1))+(m_h*(Cp*(th1-th2)))/t4);
-lhex_i = T0*((Cp*log(t1/t6))+m_l*(Cpw*log(tl2/tl1))+(m_l*(Cpw*(tl1-tl2)))/t1);
+turbine_i = T0*(Cp*(log(t4/t5))-((R/778)*(log(p4/p5))));
+regen_i = T0*((Cp*log(t3/t2)-(R/778)*log(p3/p2))+Cp*log(t6/t2)-(R/778)*log(p6/p5));
+hhex_i = T0*(Cp*log(t4/t3)+m_h*Cp*log(th1/th2));
+lhex_i = T0*(m_l*(.2313-.0162)+Cp*log(t6/t1));
    
 irrev = (compressor_i + turbine_i + regen_i + hhex_i + lhex_i)/w_net;
+
 end
 
 % FINDDELTAP is used to find the change in pressure across the regenerator
